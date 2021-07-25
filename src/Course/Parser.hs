@@ -119,8 +119,10 @@ constantParser =
 -- True
 character ::
   Parser Char
-character =
-  error "todo: Course.Parser#character"
+character = P (\input -> case input of 
+  (x:.xs) -> Result xs x
+  _ -> UnexpectedEof
+  )
 
 -- | Parsers can map.
 -- Write a Functor instance for a @Parser@.
@@ -132,8 +134,7 @@ instance Functor Parser where
     (a -> b)
     -> Parser a
     -> Parser b
-  (<$>) =
-     error "todo: Course.Parser (<$>)#instance Parser"
+  (<$>) f (P p1) = P $ \i -> let Result input a = p1 i in Result input (f a) 
 
 -- | Return a parser that always succeeds with the given value and consumes no input.
 --
@@ -142,8 +143,7 @@ instance Functor Parser where
 valueParser ::
   a
   -> Parser a
-valueParser =
-  error "todo: Course.Parser#valueParser"
+valueParser a = P $ \i -> Result i a
 
 -- | Return a parser that tries the first parser for a successful value.
 --
@@ -166,8 +166,7 @@ valueParser =
   Parser a
   -> Parser a
   -> Parser a
-(|||) =
-  error "todo: Course.Parser#(|||)"
+(|||) (P p1) (P p2) = P $ \i -> let x = p1 i in if not $ isErrorResult x then x else p2 i
 
 infixl 3 |||
 
